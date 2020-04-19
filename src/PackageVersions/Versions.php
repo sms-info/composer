@@ -17,8 +17,8 @@ use UnexpectedValueException;
  */
 final class Versions
 {
-    public const ROOT_PACKAGE_NAME = FallbackVersions::ROOT_PACKAGE_NAME;
-    public const VERSIONS          = [];
+    const ROOT_PACKAGE_NAME = FallbackVersions::ROOT_PACKAGE_NAME;
+    const VERSIONS          = [];
 
     private function __construct()
     {

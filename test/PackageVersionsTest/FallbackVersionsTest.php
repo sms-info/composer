@@ -21,23 +21,17 @@ use function uniqid;
  */
 final class FallbackVersionsTest extends TestCase
 {
-    public function testWillFailWithoutValidPackageData() : void
+    public function testWillFailWithoutValidPackageData()
     {
         $this->backupFile(__DIR__ . '/../../vendor/composer/installed.json');
         $this->backupFile(__DIR__ . '/../../composer.lock');
 
         $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessageMatches(
-            '@PackageVersions could not locate the `vendor/composer/installed\.json` or your `composer\.lock` '
-            . 'location\. This is assumed to be in \[[^]]+?\]\. If you customized your composer vendor directory and ran composer '
-            . 'installation with --no-scripts or if you deployed without the required composer files, then you are on '
-            . 'your own, and we can\'t really help you\. Fix your shit and cut the tooling some slack\.@'
-        );
 
         FallbackVersions::getVersion('phpunit/phpunit');
     }
 
-    public function testValidVersions() : void
+    public function testValidVersions()
     {
         $lockData = json_decode(file_get_contents(__DIR__ . '/../../composer.lock'), true);
 
@@ -53,7 +47,7 @@ final class FallbackVersionsTest extends TestCase
         }
     }
 
-    public function testValidVersionsWithoutComposerLock() : void
+    public function testValidVersionsWithoutComposerLock()
     {
         $lockData = json_decode(file_get_contents(__DIR__ . '/../../composer.lock'), true);
 
@@ -70,7 +64,7 @@ final class FallbackVersionsTest extends TestCase
         }
     }
 
-    public function testValidVersionsWithoutInstalledJson() : void
+    public function testValidVersionsWithoutInstalledJson()
     {
         $packages = json_decode(file_get_contents(__DIR__ . '/../../vendor/composer/installed.json'), true);
         // normalize composer 2.x installed.json format to the 1.x one
@@ -95,25 +89,25 @@ final class FallbackVersionsTest extends TestCase
         }
     }
 
-    public function testInvalidVersionsAreRejected() : void
+    public function testInvalidVersionsAreRejected()
     {
         $this->expectException(OutOfBoundsException::class);
 
         FallbackVersions::getVersion(uniqid('', true) . '/' . uniqid('', true));
     }
 
-    protected function tearDown() : void
+    protected function tearDown()
     {
         $this->revertFile(__DIR__ . '/../../composer.lock');
         $this->revertFile(__DIR__ . '/../../vendor/composer/installed.json');
     }
 
-    private function backupFile(string $filename) : void
+    private function backupFile(string $filename)
     {
         rename($filename, $filename . '.backup');
     }
 
-    private function revertFile(string $filename) : void
+    private function revertFile(string $filename)
     {
         if (! file_exists($filename . '.backup')) {
             return;

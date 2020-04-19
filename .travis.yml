@@ -1,16 +1,40 @@
 language: php
 
-sudo: false
+dist: bionic
 
-php:
-  - 7.4
-
-env:
-  - LOCKED_DEPENDENCIES=1
-  - DEPENDENCIES=""
-  - DEPENDENCIES="--prefer-lowest --prefer-stable"
-  - DEPENDENCIES="--classmap-authoritative"
-  - DEPENDENCIES="--no-scripts"
+matrix:
+  include:
+    - php: 7.0
+      dist: xenial
+      env:
+        - DEPENDENCIES=""
+    - php: 7.0
+      dist: xenial
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+    - php: 7.1
+      dist: xenial
+      env:
+        - DEPENDENCIES=""
+    - php: 7.2
+      dist: xenial
+      env:
+        - DEPENDENCIES=""
+    - php: 7.3
+      env:
+        - DEPENDENCIES=""
+    - php: 7.4
+      env:
+        - LOCKED_DEPENDENCIES=1
+    - php: 7.4
+      env:
+        - DEPENDENCIES=""
+    - php: 7.4
+      env:
+        - DEPENDENCIES="--classmap-authoritative"
+    - php: 7.4
+      env:
+        - DEPENDENCIES="--no-scripts"
 
 before_script:
   # aliasing current branch as `master`, since otherwise composer cannot determine the current branch-alias
@@ -21,13 +45,4 @@ before_script:
   - if [[ $LOCKED_DEPENDENCIES = '' ]]; then composer update $DEPENDENCIES; fi
 
 script:
-  - if [[ "$DEPENDENCIES" != '--no-scripts' ]]; then ./vendor/bin/psalm; fi
-  # TODO see https://github.com/vimeo/psalm/issues/1881 https://github.com/Ocramius/PackageVersions/issues/90 :
-  # - ! ./vendor/bin/psalm test/static-analysis/unhappy-path/unexpected-package-name.php
-  - ./vendor/bin/phpunit --disallow-test-output --coverage-clover=clover.xml
-  - if [[ $LOCKED_DEPENDENCIES = '1' ]]; then ./vendor/bin/phpcs; fi
-  - if [[ $LOCKED_DEPENDENCIES = '1' ]]; then ./vendor/bin/infection --min-msi=100 --min-covered-msi=100; fi
-
-after_script:
-  - if [[ $LOCKED_DEPENDENCIES = '1' ]]; then wget https://scrutinizer-ci.com/ocular.phar; fi
-  - if [[ $LOCKED_DEPENDENCIES = '1' ]]; then php ocular.phar code-coverage:upload --format=php-clover ./clover.xml; fi
+  - ./vendor/bin/phpunit --disallow-test-output

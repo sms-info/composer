@@ -7,5 +7,5 @@ use PackageVersions\Versions;
 /** @psalm-pure */
 function getVersion() : string
 {
-    return Versions::getVersion('ocramius/package-versions');
+    return Versions::getVersion('composer/package-versions-deprecated');
 }

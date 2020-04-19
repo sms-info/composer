@@ -43,13 +43,13 @@ use const PHP_BINARY;
  */
 class E2EInstallerTest extends TestCase
 {
-    private string $tempGlobalComposerHome;
+    private $tempGlobalComposerHome;
 
-    private string $tempLocalComposerHome;
+    private $tempLocalComposerHome;
 
-    private string $tempArtifact;
+    private $tempArtifact;
 
-    protected function setUp() : void
+    protected function setUp()
     {
         $this->tempGlobalComposerHome = sys_get_temp_dir() . '/' . uniqid('InstallerTest', true) . '/global';
         $this->tempLocalComposerHome  = sys_get_temp_dir() . '/' . uniqid('InstallerTest', true) . '/local';
@@ -61,7 +61,7 @@ class E2EInstallerTest extends TestCase
         putenv('COMPOSER_HOME=' . $this->tempGlobalComposerHome);
     }
 
-    protected function tearDown() : void
+    protected function tearDown()
     {
         $this->rmDir($this->tempGlobalComposerHome);
         $this->rmDir($this->tempLocalComposerHome);
@@ -70,14 +70,14 @@ class E2EInstallerTest extends TestCase
         putenv('COMPOSER_HOME');
     }
 
-    public function testGloballyInstalledPluginDoesNotGenerateVersionsForLocalProject() : void
+    public function testGloballyInstalledPluginDoesNotGenerateVersionsForLocalProject()
     {
         $this->createPackageVersionsArtifact();
 
         $this->writeComposerJsonFile(
             [
                 'name'         => 'package-versions/e2e-global',
-                'require'      => ['ocramius/package-versions' => '1.0.0'],
+                'require'      => ['composer/package-versions-deprecated' => '1.0.0'],
                 'repositories' => [
                     ['packagist' => false],
                     [
@@ -108,12 +108,12 @@ class E2EInstallerTest extends TestCase
         );
 
         $this->execComposerInDir('update', $this->tempLocalComposerHome);
-        self::assertFileDoesNotExist(
-            $this->tempLocalComposerHome . '/vendor/ocramius/package-versions/src/PackageVersions/Versions.php'
-        );
+        $this->assertFalse(file_exists(
+            $this->tempLocalComposerHome . '/vendor/composer/package-versions-deprecated/src/PackageVersions/Versions.php'
+        ));
     }
 
-    public function testRemovingPluginDoesNotAttemptToGenerateVersions() : void
+    public function testRemovingPluginDoesNotAttemptToGenerateVersions()
     {
         $this->createPackageVersionsArtifact();
         $this->createArtifact();
@@ -123,7 +123,7 @@ class E2EInstallerTest extends TestCase
                 'name'         => 'package-versions/e2e-local',
                 'require'      => [
                     'test/package' => '2.0.0',
-                    'ocramius/package-versions' => '1.0.0',
+                    'composer/package-versions-deprecated' => '1.0.0',
                 ],
                 'repositories' => [
                     ['packagist' => false],
@@ -138,21 +138,21 @@ class E2EInstallerTest extends TestCase
 
         $this->execComposerInDir('update', $this->tempLocalComposerHome);
         self::assertFileExists(
-            $this->tempLocalComposerHome . '/vendor/ocramius/package-versions/src/PackageVersions/Versions.php'
+            $this->tempLocalComposerHome . '/vendor/composer/package-versions-deprecated/src/PackageVersions/Versions.php'
         );
 
-        $this->execComposerInDir('remove ocramius/package-versions', $this->tempLocalComposerHome);
+        $this->execComposerInDir('remove composer/package-versions-deprecated', $this->tempLocalComposerHome);
 
-        self::assertFileDoesNotExist(
-            $this->tempLocalComposerHome . '/vendor/ocramius/package-versions/src/PackageVersions/Versions.php'
-        );
+        $this->assertFalse(file_exists(
+            $this->tempLocalComposerHome . '/vendor/composer/package-versions-deprecated/src/PackageVersions/Versions.php'
+        ));
     }
 
     /**
      * @group #41
      * @group #46
      */
-    public function testRemovingPluginWithNoDevDoesNotAttemptToGenerateVersions() : void
+    public function testRemovingPluginWithNoDevDoesNotAttemptToGenerateVersions()
     {
         $this->createPackageVersionsArtifact();
         $this->createArtifact();
@@ -160,7 +160,7 @@ class E2EInstallerTest extends TestCase
         $this->writeComposerJsonFile(
             [
                 'name'         => 'package-versions/e2e-local',
-                'require-dev'      => ['ocramius/package-versions' => '1.0.0'],
+                'require-dev'      => ['composer/package-versions-deprecated' => '1.0.0'],
                 'repositories' => [
                     ['packagist' => false],
                     [
@@ -174,20 +174,20 @@ class E2EInstallerTest extends TestCase
 
         $this->execComposerInDir('update', $this->tempLocalComposerHome);
         self::assertFileExists(
-            $this->tempLocalComposerHome . '/vendor/ocramius/package-versions/src/PackageVersions/Versions.php'
+            $this->tempLocalComposerHome . '/vendor/composer/package-versions-deprecated/src/PackageVersions/Versions.php'
         );
 
         $this->execComposerInDir('install --no-dev', $this->tempLocalComposerHome);
 
-        self::assertFileDoesNotExist(
-            $this->tempLocalComposerHome . '/vendor/ocramius/package-versions/src/PackageVersions/Versions.php'
-        );
+        $this->assertFalse(file_exists(
+            $this->tempLocalComposerHome . '/vendor/composer/package-versions-deprecated/src/PackageVersions/Versions.php'
+        ));
     }
 
     /**
      * @group 101
      */
-    public function testInstallingPluginWithNoScriptsLeadsToUsableVersionsClass() : void
+    public function testInstallingPluginWithNoScriptsLeadsToUsableVersionsClass()
     {
         $this->createPackageVersionsArtifact();
         $this->createArtifact();
@@ -195,7 +195,7 @@ class E2EInstallerTest extends TestCase
         $this->writeComposerJsonFile(
             [
                 'name'         => 'package-versions/e2e-local',
-                'require'      => ['ocramius/package-versions' => '1.0.0'],
+                'require'      => ['composer/package-versions-deprecated' => '1.0.0'],
                 'repositories' => [
                     ['packagist' => false],
                     [
@@ -209,14 +209,14 @@ class E2EInstallerTest extends TestCase
 
         $this->execComposerInDir('install --no-scripts', $this->tempLocalComposerHome);
         self::assertFileExists(
-            $this->tempLocalComposerHome . '/vendor/ocramius/package-versions/src/PackageVersions/Versions.php'
+            $this->tempLocalComposerHome . '/vendor/composer/package-versions-deprecated/src/PackageVersions/Versions.php'
         );
 
         $this->writePackageVersionUsingFile($this->tempLocalComposerHome);
         self::assertPackageVersionsIsUsable($this->tempLocalComposerHome);
     }
 
-    private function createPackageVersionsArtifact() : void
+    private function createPackageVersionsArtifact()
     {
         $zip = new ZipArchive();
 
@@ -257,7 +257,7 @@ class E2EInstallerTest extends TestCase
         $zip->close();
     }
 
-    private function createArtifact() : void
+    private function createArtifact()
     {
         $zip = new ZipArchive();
 
@@ -278,7 +278,7 @@ class E2EInstallerTest extends TestCase
     /**
      * @param mixed[] $config
      */
-    private function writeComposerJsonFile(array $config, string $directory) : void
+    private function writeComposerJsonFile(array $config, string $directory)
     {
         file_put_contents(
             $directory . '/composer.json',
@@ -286,7 +286,7 @@ class E2EInstallerTest extends TestCase
         );
     }
 
-    private function writePackageVersionUsingFile(string $directory) : void
+    private function writePackageVersionUsingFile(string $directory)
     {
         file_put_contents(
             $directory . '/use-package-versions.php',
@@ -295,18 +295,18 @@ class E2EInstallerTest extends TestCase
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-echo \PackageVersions\Versions::getVersion('ocramius/package-versions');
+echo \PackageVersions\Versions::getVersion('composer/package-versions-deprecated');
 PHP
         );
     }
 
-    private function assertPackageVersionsIsUsable(string $directory) : void
+    private function assertPackageVersionsIsUsable(string $directory)
     {
         exec(PHP_BINARY . ' ' . escapeshellarg($directory . '/use-package-versions.php'), $output, $exitCode);
 
         self::assertSame(0, $exitCode);
         self::assertCount(1, $output);
-        self::assertMatchesRegularExpression('/^1\\..*\\@[a-f0-9]*$/', $output[0]);
+        self::assertTrue(preg_match('/^1\\..*\\@[a-f0-9]*$/', $output[0]) > 0);
     }
 
     /**
@@ -323,7 +323,7 @@ PHP
         return $output;
     }
 
-    private function rmDir(string $directory) : void
+    private function rmDir(string $directory)
     {
         if (! is_dir($directory)) {
             unlink($directory);
@@ -332,7 +332,7 @@ PHP
         }
 
         array_map(
-            function ($item) use ($directory) : void {
+            function ($item) use ($directory) {
                 $this->rmDir($directory . '/' . $item);
             },
             array_filter(

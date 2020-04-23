@@ -116,7 +116,7 @@ PHP;
 
         if (! array_key_exists('composer/package-versions-deprecated', $versions)) {
             //plugin must be globally installed - we only want to generate versions for projects which specifically
-            //require ocramius/package-versions
+            //require composer/package-versions-deprecated
             return;
         }
 
@@ -160,6 +160,10 @@ PHP;
         rename($installPathTmp, $installPath);
 
         $io->write('<info>composer/package-versions-deprecated:</info> ...done generating version class');
+
+        if (version_compare(PluginInterface::PLUGIN_API_VERSION, '2.0.0', '>=')) {
+            $io->write('<info>composer/package-versions-deprecated:</info> <warning>You should rely on the Composer\InstalledVersions class instead of this package as you are using Composer 2. You can require composer-runtime-api:^2 to ensure it is present.</warning>');
+        }
     }
 
     /**

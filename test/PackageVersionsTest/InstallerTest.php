@@ -216,6 +216,8 @@ use OutOfBoundsException;
  * @see \PackageVersions\Installer
  *
  * This file is overwritten at every run of `composer install` or `composer update`.
+ *
+ * @deprecated in favor of the Composer\InstalledVersions class provided by Composer 2. Require composer-runtime-api:^2 to ensure it is present.
  */
 final class Versions
 {
@@ -332,6 +334,8 @@ use OutOfBoundsException;
  * @see \PackageVersions\Installer
  *
  * This file is overwritten at every run of `composer install` or `composer update`.
+ *
+ * @deprecated in favor of the Composer\InstalledVersions class provided by Composer 2. Require composer-runtime-api:^2 to ensure it is present.
  */
 final class Versions
 {
@@ -451,6 +455,8 @@ use OutOfBoundsException;
  * @see \PackageVersions\Installer
  *
  * This file is overwritten at every run of `composer install` or `composer update`.
+ *
+ * @deprecated in favor of the Composer\InstalledVersions class provided by Composer 2. Require composer-runtime-api:^2 to ensure it is present.
  */
 final class Versions
 {
@@ -863,6 +869,8 @@ use OutOfBoundsException;
  * @see \PackageVersions\Installer
  *
  * This file is overwritten at every run of `composer install` or `composer update`.
+ *
+ * @deprecated in favor of the Composer\InstalledVersions class provided by Composer 2. Require composer-runtime-api:^2 to ensure it is present.
  */
 final class Versions
 {

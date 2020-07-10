@@ -45,6 +45,8 @@ use OutOfBoundsException;
  * @see \PackageVersions\Installer
  *
  * This file is overwritten at every run of `composer install` or `composer update`.
+ *
+ * @deprecated in favor of the Composer\InstalledVersions class provided by Composer 2. Require composer-runtime-api:^2 to ensure it is present.
  */
 %s
 {
@@ -160,10 +162,6 @@ PHP;
         rename($installPathTmp, $installPath);
 
         $io->write('<info>composer/package-versions-deprecated:</info> ...done generating version class');
-
-        if (version_compare(PluginInterface::PLUGIN_API_VERSION, '2.0.0', '>=')) {
-            $io->write('<info>composer/package-versions-deprecated:</info> <warning>You should rely on the Composer\InstalledVersions class instead of this package as you are using Composer 2. You can require composer-runtime-api:^2 to ensure it is present.</warning>');
-        }
     }
 
     /**

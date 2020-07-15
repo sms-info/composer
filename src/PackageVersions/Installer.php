@@ -17,12 +17,14 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Generator;
 use RuntimeException;
+
 use function array_key_exists;
 use function array_merge;
 use function chmod;
 use function dirname;
 use function file_exists;
 use function file_put_contents;
+use function is_writable;
 use function iterator_to_array;
 use function rename;
 use function sprintf;
@@ -38,6 +40,7 @@ declare(strict_types=1);
 
 namespace PackageVersions;
 
+use Composer\InstalledVersions;
 use OutOfBoundsException;
 
 /**
@@ -50,7 +53,14 @@ use OutOfBoundsException;
  */
 %s
 {
+    /**
+     * @deprecated please use {@see \Composer\InstalledVersions::getRootPackage()} instead. The
+     *             equivalent expression for this constant's contents is
+     *             `\Composer\InstalledVersions::getRootPackage()['name']`.
+     *             This constant will be removed in version 2.0.0.
+     */
     const ROOT_PACKAGE_NAME = '%s';
+
     /**
      * Array of all available composer packages.
      * Dont read this array from your calling code, but use the \PackageVersions\Versions::getVersion() method instead.
@@ -62,6 +72,7 @@ use OutOfBoundsException;
 
     private function __construct()
     {
+        class_exists(InstalledVersions::class);
     }
 
     /**
@@ -69,9 +80,17 @@ use OutOfBoundsException;
      *
      * @psalm-param key-of<self::VERSIONS> $packageName
      * @psalm-pure
+     *
+     * @psalm-suppress ImpureMethodCall we know that {@see InstalledVersions} interaction does not
+     *                                  cause any side effects here.
      */
-    public static function getVersion(string $packageName) : string
+    public static function getVersion(string $packageName): string
     {
+        if (class_exists(InstalledVersions::class, false)) {
+            return InstalledVersions::getPrettyVersion($packageName)
+                . '@' . InstalledVersions::getReference($packageName);
+        }
+
         if (isset(self::VERSIONS[$packageName])) {
             return self::VERSIONS[$packageName];
         }
@@ -102,7 +121,7 @@ PHP;
     /**
      * {@inheritDoc}
      */
-    public static function getSubscribedEvents() : array
+    public static function getSubscribedEvents(): array
     {
         return [ScriptEvents::POST_AUTOLOAD_DUMP => 'dumpVersionsClass'];
     }
@@ -130,7 +149,7 @@ PHP;
     /**
      * @param string[] $versions
      */
-    private static function generateVersionsClass(string $rootPackageName, array $versions) : string
+    private static function generateVersionsClass(string $rootPackageName, array $versions): string
     {
         return sprintf(
             self::$generatedClassTemplate,
@@ -148,8 +167,20 @@ PHP;
         $installPath = self::locateRootPackageInstallPath($composer->getConfig(), $composer->getPackage())
             . '/src/PackageVersions/Versions.php';
 
-        if (! file_exists(dirname($installPath))) {
+        $installDir = dirname($installPath);
+        if (! file_exists($installDir)) {
             $io->write('<info>composer/package-versions-deprecated:</info> Package not found (probably scheduled for removal); generation of version class skipped.');
+
+            return;
+        }
+
+        if (! is_writable($installDir)) {
+            $io->write(
+                sprintf(
+                    '<info>composer/package-versions-deprecated:</info> %s is not writable; generation of version class skipped.',
+                    $installDir
+                )
+            );
 
             return;
         }
@@ -170,7 +201,7 @@ PHP;
     private static function locateRootPackageInstallPath(
         Config $composerConfig,
         RootPackageInterface $rootPackage
-    ) : string {
+    ): string {
         if (self::getRootPackageAlias($rootPackage)->getName() === 'composer/package-versions-deprecated') {
             return dirname($composerConfig->get('vendor-dir'));
         }
@@ -178,7 +209,7 @@ PHP;
         return $composerConfig->get('vendor-dir') . '/composer/package-versions-deprecated';
     }
 
-    private static function getRootPackageAlias(RootPackageInterface $rootPackage) : PackageInterface
+    private static function getRootPackageAlias(RootPackageInterface $rootPackage): PackageInterface
     {
         $package = $rootPackage;
 
@@ -194,7 +225,7 @@ PHP;
      *
      * @psalm-return Generator<string, string>
      */
-    private static function getVersions(Locker $locker, RootPackageInterface $rootPackage) : Generator
+    private static function getVersions(Locker $locker, RootPackageInterface $rootPackage): Generator
     {
         $lockData = $locker->getLockData();
 
@@ -202,7 +233,7 @@ PHP;
 
         foreach (array_merge($lockData['packages'], $lockData['packages-dev']) as $package) {
             yield $package['name'] => $package['version'] . '@' . (
-                $package['source']['reference']?? $package['dist']['reference'] ?? ''
+                $package['source']['reference'] ?? $package['dist']['reference'] ?? ''
             );
         }
 

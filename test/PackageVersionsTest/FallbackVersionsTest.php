@@ -8,6 +8,7 @@ use OutOfBoundsException;
 use PackageVersions\FallbackVersions;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
+
 use function array_merge;
 use function file_exists;
 use function file_get_contents;

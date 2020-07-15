@@ -7,6 +7,7 @@ namespace PackageVersionsTest;
 use OutOfBoundsException;
 use PackageVersions\Versions;
 use PHPUnit\Framework\TestCase;
+
 use function array_merge;
 use function file_get_contents;
 use function json_decode;

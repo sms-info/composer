@@ -35,6 +35,9 @@ matrix:
     - php: 7.4
       env:
         - DEPENDENCIES="--no-scripts"
+    - php: nightly
+      env:
+        - DEPENDENCIES=""
 
 before_script:
   # aliasing current branch as `master`, since otherwise composer cannot determine the current branch-alias

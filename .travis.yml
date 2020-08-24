@@ -40,7 +40,7 @@ before_script:
   # aliasing current branch as `master`, since otherwise composer cannot determine the current branch-alias
   - git branch -D master || true
   - git checkout -b master
-  - composer self-update
+  - if [[ $DEPENDENCIES = '--no-scripts' ]]; then composer self-update --2; else composer self-update; fi
   - if [[ $LOCKED_DEPENDENCIES = '1' ]]; then composer install; fi
   - if [[ $LOCKED_DEPENDENCIES = '' ]]; then composer update $DEPENDENCIES; fi
 

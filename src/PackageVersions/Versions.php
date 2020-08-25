@@ -8,6 +8,8 @@ use Composer\InstalledVersions;
 use OutOfBoundsException;
 use UnexpectedValueException;
 
+class_exists(InstalledVersions::class);
+
 /**
  * This is a stub class: it is in place only for scenarios where PackageVersions
  * is installed with a `--no-scripts` flag, in which scenarios the Versions class
@@ -19,17 +21,31 @@ use UnexpectedValueException;
 final class Versions
 {
     /**
-     * @deprecated please use {@see \Composer\InstalledVersions::getRootPackage()} instead. The
-     *             equivalent expression for this constant's contents is
-     *             `\Composer\InstalledVersions::getRootPackage()['name']`.
+     * @deprecated please use {@see self::rootPackageName()} instead.
      *             This constant will be removed in version 2.0.0.
      */
-    const ROOT_PACKAGE_NAME = FallbackVersions::ROOT_PACKAGE_NAME;
+    const ROOT_PACKAGE_NAME = 'unknown/root-package@UNKNOWN';
+
+    /** @internal */
     const VERSIONS          = [];
 
     private function __construct()
     {
-        class_exists(InstalledVersions::class);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @psalm-suppress ImpureMethodCall we know that {@see InstalledVersions} interaction does not
+     *                                  cause any side effects here.
+     */
+    public static function rootPackageName() : string
+    {
+        if (!class_exists(InstalledVersions::class, false) || !InstalledVersions::getRawData()) {
+            return self::ROOT_PACKAGE_NAME;
+        }
+
+        return InstalledVersions::getRootPackage()['name'];
     }
 
     /**
@@ -38,8 +54,15 @@ final class Versions
      */
     public static function getVersion(string $packageName): string
     {
-        if (!class_exists(InstalledVersions::class, false)) {
+        if (!class_exists(InstalledVersions::class, false) || !InstalledVersions::getRawData()) {
             return FallbackVersions::getVersion($packageName);
+        }
+
+        /** @psalm-suppress DeprecatedConstant */
+        if ($packageName === self::ROOT_PACKAGE_NAME) {
+            $rootPackage = InstalledVersions::getRootPackage();
+
+            return $rootPackage['pretty_version'] . '@' . $rootPackage['reference'];
         }
 
         return InstalledVersions::getPrettyVersion($packageName)

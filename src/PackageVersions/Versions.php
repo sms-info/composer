@@ -54,7 +54,7 @@ final class Versions
      */
     public static function getVersion(string $packageName): string
     {
-        if (!class_exists(InstalledVersions::class, false) || !InstalledVersions::getRawData()) {
+        if (!self::composer2ApiUsable()) {
             return FallbackVersions::getVersion($packageName);
         }
 
@@ -67,5 +67,26 @@ final class Versions
 
         return InstalledVersions::getPrettyVersion($packageName)
             . '@' . InstalledVersions::getReference($packageName);
+    }
+
+    private static function composer2ApiUsable(): bool
+    {
+        if (!class_exists(InstalledVersions::class, false)) {
+            return false;
+        }
+
+        if (method_exists(InstalledVersions::class, 'getAllRawData')) {
+            $rawData = InstalledVersions::getAllRawData();
+            if (count($rawData) === 1 && count($rawData[0]) === 0) {
+                return false;
+            }
+        } else {
+            $rawData = InstalledVersions::getRawData();
+            if ($rawData === []) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

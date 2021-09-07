@@ -82,7 +82,7 @@ final class Versions
             }
         } else {
             $rawData = InstalledVersions::getRawData();
-            if ($rawData === []) {
+            if ($rawData === null || $rawData === []) {
                 return false;
             }
         }

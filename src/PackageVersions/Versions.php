@@ -17,6 +17,8 @@ class_exists(InstalledVersions::class);
  *
  * If you are reading this docBlock inside your `vendor/` dir, then this means
  * that PackageVersions didn't correctly install, and is in "fallback" mode.
+ *
+ * @deprecated in favor of the Composer\InstalledVersions class provided by Composer 2. Require composer-runtime-api:^2 to ensure it is present.
  */
 final class Versions
 {
